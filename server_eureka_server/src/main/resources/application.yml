@@ -1,0 +1,90 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+  profiles:
+    active: dev
+
+# 开发环境配置
+---
+server:
+  port: 8761
+spring:
+  profiles: dev
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    # 客户端向服务端发送心跳的时间间隔，单位为秒
+    lease-renewal-interval-in-seconds: 30
+    # 服务端在收到最后一次心跳之后的等待时间上限，单位为秒
+    lease-expiration-duration-in-seconds: 90
+  server:
+    # 关闭自我保护
+    enable-self-preservation: false
+
+# 阿里云测试环境
+---
+server:
+  port: 8761
+spring:
+  profiles: test
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/,${ADDITIONAL_EUREKA_SERVER_LIST}
+  instance:
+    hostname: localhost
+    # 客户端向服务端发送心跳的时间间隔，单位为秒
+    lease-renewal-interval-in-seconds: 30
+    # 服务端在收到最后一次心跳之后的等待时间上限，单位为秒
+    lease-expiration-duration-in-seconds: 90
+  server:
+    # 关闭自我保护
+    enable-self-preservation: false
+
+# 生产环境配置
+---
+server:
+  port: 8761
+spring:
+  profiles: prod-peer0
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_LIST}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: localhost
+    # 客户端向服务端发送心跳的时间间隔，单位为秒
+    lease-renewal-interval-in-seconds: 30
+    # 服务端在收到最后一次心跳之后的等待时间上限，单位为秒
+    lease-expiration-duration-in-seconds: 90
+  server:
+    # 关闭自我保护
+    enable-self-preservation: false
+---
+server:
+  port: 8762
+spring:
+  profiles: prod-peer1
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_LIST}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: localhost
+    # 客户端向服务端发送心跳的时间间隔，单位为秒
+    lease-renewal-interval-in-seconds: 30
+    # 服务端在收到最后一次心跳之后的等待时间上限，单位为秒
+    lease-expiration-duration-in-seconds: 90
+  server:
+    # 关闭自我保护
+    enable-self-preservation: false

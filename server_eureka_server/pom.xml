@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.sie</groupId>
+    <artifactId>eureka-server</artifactId>
+    <version>1.1.1</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.4.4.RELEASE</version>
+        <relativePath />
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka-server</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Brixton.SR5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <docker.repository>ec2-54-169-209-238.ap-southeast-1.compute.amazonaws.com</docker.repository>
+        <docker.registry.name>prod-sie</docker.registry.name>
+        <docker.tag.latest>latest</docker.tag.latest>
+    </properties>
+
+
+    <build>
+        <!--方便Dockerfile，包名不带版本号-->
+        <defaultGoal>install</defaultGoal>
+        <finalName>${project.artifactId}</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- 打包时跳过单元测试 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!-- 配置docker maven插件，绑定install生命周期，在运行maven install时生成docker镜像并推送到远程仓库 -->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>tag-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>tag</goal>
+                        </goals>
+                        <configuration>
+                            <image>${docker.repository}/${docker.registry.name}/${project.artifactId}:${project.version}</image>
+                            <newName>${docker.repository}/${docker.registry.name}/${project.artifactId}:${docker.tag.latest}</newName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>push-image</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <imageName>${docker.repository}/${docker.registry.name}/${project.artifactId}:${project.version}</imageName>
+                        </configuration>
+                    </execution>
+                </executions>
+
+
+                <configuration>
+                    <imageName>${docker.repository}/${docker.registry.name}/${project.artifactId}:${project.version}</imageName>
+                    <imageTags>
+                        <imageTag>${project.version}</imageTag>
+                        <imageTag>latest</imageTag>
+                    </imageTags>
+                    <baseImage>openjdk:8-jdk</baseImage>
+                    <runs>
+                        <run>ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime</run>
+                        <run>echo "Asia/Shanghai" > /etc/timezone</run>
+                    </runs>
+                    <!-- 这里的entryPoint定义了容器启动时的运行命令，容器启动时运行
+                    java -jar 包名 , -Djava.security.egd这个配置解决tomcat8启动时因为需要收集环境噪声来生成安全随机数导致启动过慢的问题-->
+                    <entryPoint>["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]
+                    </entryPoint>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+
+                    <forceTags>true</forceTags>
+                    <!--<serverId>docker-aws</serverId>-->
+                    <useConfigFile>true</useConfigFile>
+                    <registryUrl>${docker.repository}</registryUrl>
+                    <pushImage>true</pushImage>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
