@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/fescar2
+    username: root
+    password: 123456
+server:
+  port: 11113

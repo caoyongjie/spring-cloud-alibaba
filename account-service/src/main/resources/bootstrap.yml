@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: account-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/fescar3
+    username: root
+    password: 123456
+server:
+  port: 11111
