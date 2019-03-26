@@ -4,8 +4,6 @@ import com.alibaba.fescar.business.dto.BusinessDTO;
 import com.alibaba.fescar.business.dto.OrderDTO;
 import com.alibaba.fescar.business.dto.StorageDTO;
 import com.alibaba.fescar.business.service.BusinessService;
-import com.alibaba.fescar.business.service.OrderService;
-import com.alibaba.fescar.business.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -24,24 +22,10 @@ public class BusinessController {
 
     @Autowired
     private BusinessService businessService;
-    @Autowired
-    private OrderService orderService;
-
-    @Autowired
-    private StorageService storageService;
 
     @PostMapping
     public ResponseEntity<?> insert(@RequestBody BusinessDTO businessDTO){
-        //businessService.purchase(businessDTO);
-        String userId = businessDTO.getUserId();
-        String commodityCode = businessDTO.getCommodityCode();
-        Integer orderCount = businessDTO.getOrderCount();
-        Assert.notNull(businessDTO, "businessDTO");
-        Assert.notNull(userId, "userId");
-        Assert.notNull(commodityCode, "commodityCode");
-        Assert.notNull(orderCount, "orderCount");
-        storageService.updateStorage(new StorageDTO().setCommodityCode(commodityCode).setCount(orderCount));
-        orderService.createOrder(new OrderDTO().setUserId(userId).setCommodityCode(commodityCode).setCount(orderCount));
+        businessService.purchase(businessDTO);
         return ResponseEntity.ok(HttpEntity.EMPTY);
     }
 

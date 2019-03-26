@@ -2,6 +2,7 @@ package com.alibaba.fescar.business.service;
 
 
 import com.alibaba.fescar.business.dto.OrderDTO;
+import com.alibaba.fescar.business.service.impl.OrderFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author XCXCXCXCX
  * @since 1.0
  */
-@FeignClient(name = "order", url = "http://localhost:11113/order")
+@FeignClient(name = "ORDER-SERVICE", fallback = OrderFallback.class)
 public interface OrderService {
 
     /**
